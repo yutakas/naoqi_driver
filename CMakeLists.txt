@@ -66,6 +66,7 @@ set(
   src/event/basic.hpp
   src/event/audio.cpp
   src/event/touch.cpp
+  src/event/memory.cpp
   )
 
 # use catkin if qibuild is not found

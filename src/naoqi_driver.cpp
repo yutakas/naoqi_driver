@@ -86,6 +86,7 @@
 #include "event/basic.hpp"
 #include "event/audio.hpp"
 #include "event/touch.hpp"
+#include "event/memory.hpp"
 
 /*
  * STATIC FUNCTIONS INCLUDE
@@ -584,6 +585,7 @@ void Driver::registerDefaultConverter()
   bool bumper_enabled                 = boot_config_.get( "converters.bumper.enabled", true);
   bool hand_enabled                   = boot_config_.get( "converters.touch_hand.enabled", true);
   bool head_enabled                   = boot_config_.get( "converters.touch_head.enabled", true);
+  bool texttospeech_enabled           = boot_config_.get( "converters.texttospeech.enabled", true);
   /*
    * The info converter will be called once after it was added to the priority queue. Once it is its turn to be called, its
    * callAll method will be triggered (because InfoPublisher is considered to always have subscribers, isSubscribed always
@@ -839,8 +841,27 @@ void Driver::registerDefaultConverter()
     registerConverter( lc, lp, lr );
   }
   
+  // text to speech event
+  if (texttospeech_enabled)
+  {
+    boost::shared_ptr<MemoryBoolEventRegister> event_register_tts_start = boost::make_shared<MemoryBoolEventRegister>( "tts_start", "ALTextToSpeech/TextStarted", 0, sessionPtr_);
+    insertEventConverter("tts_start", event_register_tts_start);
+    if (keep_looping) {
+      event_map_.find("tts_start")->second.startProcess();
+    }
+    if (publish_enabled_) {
+      event_map_.find("tts_start")->second.isPublishing(true);
+    }
+    boost::shared_ptr<MemoryBoolEventRegister> event_register_tts_done = boost::make_shared<MemoryBoolEventRegister>( "tts_done", "ALTextToSpeech/TextDone", 0, sessionPtr_);
+    insertEventConverter("tts_done", event_register_tts_done);
+    if (keep_looping) {
+      event_map_.find("tts_done")->second.startProcess();
+    }
+    if (publish_enabled_) {
+      event_map_.find("tts_done")->second.isPublishing(true);
+    }
+  }
 }
-
 
 // public interface here
 void Driver::registerSubscriber( subscriber::Subscriber sub )
