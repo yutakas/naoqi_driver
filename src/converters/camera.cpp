@@ -60,7 +60,12 @@ const sensor_msgs::CameraInfo& getCameraInfo( int camera_source, int resolution 
   */
   if ( camera_source == AL::kTopCamera)
   {
-    if ( resolution == AL::kVGA )
+    if ( resolution == AL::k4VGA )
+    {
+      static const sensor_msgs::CameraInfo cam_info_msg = createCameraInfoTOP4VGA();
+      return cam_info_msg;
+    }
+    else if ( resolution == AL::kVGA )
     {
       static const sensor_msgs::CameraInfo cam_info_msg = createCameraInfoTOPVGA();
       return cam_info_msg;
