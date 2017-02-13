@@ -63,6 +63,7 @@
 #include "subscribers/teleop.hpp"
 #include "subscribers/moveto.hpp"
 #include "subscribers/speech.hpp"
+#include "subscribers/speechlanguage.hpp"
 #include "subscribers/runbehavior.hpp"
 
 
@@ -894,6 +895,7 @@ void Driver::registerDefaultSubscriber()
   registerSubscriber( boost::make_shared<naoqi::subscriber::MovetoSubscriber>("moveto", "/move_base_simple/goal", sessionPtr_, tf2_buffer_) );
   registerSubscriber( boost::make_shared<naoqi::subscriber::SpeechSubscriber>("speech", "/speech", sessionPtr_) );
   registerSubscriber( boost::make_shared<naoqi::subscriber::RunBehaviorSubscriber>("runbehavior", "/pepper_robot/runbehavior", sessionPtr_) );
+  registerSubscriber( boost::make_shared<naoqi::subscriber::SpeechLanguageSubscriber>("speechlanguage", "/pepper_robot/speechlanguage", sessionPtr_) );
 }
 
 void Driver::registerService( service::Service srv )
