@@ -5,14 +5,14 @@
     "front_camera":
     {
       "enabled"       : true,
-      "resolution"    : 1,
+      "resolution"    : 2,
       "fps"           : 10,
       "recorder_fps"  : 5
     },
     "bottom_camera":
     {
       "enabled"       : true,
-      "resolution"    : 1,
+      "resolution"    : 2,
       "fps"           : 10,
       "recorder_fps"  : 5
     },

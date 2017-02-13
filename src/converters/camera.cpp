@@ -58,6 +58,7 @@ const sensor_msgs::CameraInfo& getCameraInfo( int camera_source, int resolution 
   /** RETURN VALUE OPTIMIZATION (RVO)
   * since there is no C++11 initializer list nor lamda functions
   */
+  std::cout  << camera_source << "!!!!!!!!!!!!! resolution " << resolution << std::endl;
   if ( camera_source == AL::kTopCamera)
   {
     if ( resolution == AL::k4VGA )
