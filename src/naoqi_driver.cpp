@@ -168,10 +168,23 @@ void Driver::stopService() {
   event_map_.clear();
 }
 
+void Driver::rosSpinLoop()
+{
+  while( keep_looping )
+  {
+    if ( publish_enabled_ )
+    {
+      // printf("############ SPIN!! #######################\n");
+      ros::spinOnce();
+    }
+  }
+}
 
 void Driver::rosLoop()
 {
   static std::vector<message_actions::MessageAction> actions;
+
+  boost::thread rosspinThread = boost::thread( &Driver::rosSpinLoop, this );
 
 //  ros::Time::init();
   while( keep_looping )
@@ -239,15 +252,13 @@ void Driver::rosLoop()
       else // conv_queue is empty.
       {
         // sleep one second
-        ros::Duration(1).sleep();
+        ros::Duration(0.1).sleep();
       }
     } // mutex scope
 
-    if ( publish_enabled_ )
-    {
-      ros::spinOnce();
-    }
   } // while loop
+  
+  rosspinThread.join();
 }
 
 std::string Driver::minidump(const std::string& prefix)

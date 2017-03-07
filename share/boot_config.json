@@ -5,9 +5,9 @@
     "front_camera":
     {
       "enabled"       : true,
-      "resolution"    : 2,
-      "fps"           : 4,
-      "recorder_fps"  : 2
+      "resolution"    : 3,
+      "fps"           : 5,
+      "recorder_fps"  : 1
     },
     "bottom_camera":
     {
@@ -19,9 +19,9 @@
     "depth_camera":
     {
       "enabled"       : true,
-      "resolution"    : 1,
-      "fps"           : 4,
-      "recorder_fps"  : 2
+      "resolution"    : 2,
+      "fps"           : 5,
+      "recorder_fps"  : 1
     },
     "ir_camera":
     {
