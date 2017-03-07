@@ -19,7 +19,7 @@
     "depth_camera":
     {
       "enabled"       : true,
-      "resolution"    : 2,
+      "resolution"    : 1,
       "fps"           : 5,
       "recorder_fps"  : 1
     },
