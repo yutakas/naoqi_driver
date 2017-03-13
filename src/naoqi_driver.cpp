@@ -170,21 +170,28 @@ void Driver::stopService() {
 
 void Driver::rosSpinLoop()
 {
+  std::cout << __FILE__ << " " << __func__ << "  0" << std::endl;
+  // ros::MultiThreadedSpinner mtspinner;
+  // mtspinner.spin();
+  
   while( keep_looping )
   {
     if ( publish_enabled_ )
     {
-      // printf("############ SPIN!! #######################\n");
       ros::spinOnce();
     }
-  }
+  } 
+
+  std::cout << __FILE__ << " " << __func__ << "  1" << std::endl;
 }
 
 void Driver::rosLoop()
 {
   static std::vector<message_actions::MessageAction> actions;
+  std::cout << __FILE__ << " " << __func__ << "  0" << std::endl;
 
-  boost::thread rosspinThread = boost::thread( &Driver::rosSpinLoop, this );
+  boost::thread rosspinThread;
+  bool isRosspinThreadRunning = false;
 
 //  ros::Time::init();
   while( keep_looping )
@@ -256,8 +263,14 @@ void Driver::rosLoop()
       }
     } // mutex scope
 
+    if (!isRosspinThreadRunning)
+    {
+      rosspinThread = boost::thread( &Driver::rosSpinLoop, this );
+      isRosspinThreadRunning = true;
+    }
   } // while loop
   
+  std::cout << __FILE__ << " " << __func__ << "  1" << std::endl;
   rosspinThread.join();
 }
 
@@ -1161,11 +1174,13 @@ void Driver::stopLogging()
 
 void Driver::startRosLoop()
 {
-  if (publisherThread_.get_id() ==  boost::thread::id())
-    publisherThread_ = boost::thread( &Driver::rosLoop, this );
   for(EventIter iterator = event_map_.begin(); iterator != event_map_.end(); iterator++)
   {
     iterator->second.startProcess();
+  }
+  if (publisherThread_.get_id() ==  boost::thread::id())
+  {
+    publisherThread_ = boost::thread( &Driver::rosLoop, this );
   }
   // Create the publishing thread if needed
   keep_looping = true;
