@@ -171,9 +171,10 @@ void Driver::stopService() {
 void Driver::rosSpinLoop()
 {
   std::cout << __FILE__ << " " << __func__ << "  0" << std::endl;
-  // ros::MultiThreadedSpinner mtspinner;
-  // mtspinner.spin();
-  
+#if 1
+  ros::MultiThreadedSpinner mtspinner;
+  mtspinner.spin();
+#else
   while( keep_looping )
   {
     if ( publish_enabled_ )
@@ -181,7 +182,7 @@ void Driver::rosSpinLoop()
       ros::spinOnce();
     }
   } 
-
+#endif
   std::cout << __FILE__ << " " << __func__ << "  1" << std::endl;
 }
 
@@ -271,7 +272,10 @@ void Driver::rosLoop()
   } // while loop
   
   std::cout << __FILE__ << " " << __func__ << "  1" << std::endl;
-  rosspinThread.join();
+  if (isRosspinThreadRunning)
+  {
+    rosspinThread.join();
+  }
 }
 
 std::string Driver::minidump(const std::string& prefix)
