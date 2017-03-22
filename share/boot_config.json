@@ -6,7 +6,7 @@
     {
       "enabled"       : true,
       "resolution"    : 3,
-      "fps"           : 5,
+      "fps"           : 4,
       "recorder_fps"  : 1
     },
     "bottom_camera":
@@ -90,6 +90,12 @@
     {
       "enabled"       : true,
       "frequency"     : 15
+    },
+    "compressed_camera":
+    {
+      "enabled"       : true,
+      "fps"           : 2,
+      "recorder_fps"  : 1
     }
   }
 }

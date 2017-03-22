@@ -27,6 +27,7 @@
 #include "converters/audio.hpp"
 #include "converters/touch.hpp"
 #include "converters/camera.hpp"
+#include "converters/compcamera.hpp"
 #include "converters/diagnostics.hpp"
 #include "converters/imu.hpp"
 #include "converters/info.hpp"
@@ -46,6 +47,7 @@
  */
 #include "publishers/basic.hpp"
 #include "publishers/camera.hpp"
+#include "publishers/compcamera.hpp"
 #include "publishers/info.hpp"
 #include "publishers/joint_state.hpp"
 #include "publishers/log.hpp"
@@ -78,6 +80,7 @@
 #include "recorder/basic.hpp"
 #include "recorder/basic_event.hpp"
 #include "recorder/camera.hpp"
+#include "recorder/compcamera.hpp"
 #include "recorder/diagnostics.hpp"
 #include "recorder/joint_state.hpp"
 #include "recorder/sonar.hpp"
@@ -616,6 +619,11 @@ void Driver::registerDefaultConverter()
   bool hand_enabled                   = boot_config_.get( "converters.touch_hand.enabled", true);
   bool head_enabled                   = boot_config_.get( "converters.touch_head.enabled", true);
   bool texttospeech_enabled           = boot_config_.get( "converters.texttospeech.enabled", true);
+  
+  bool compcamera_enabled             = boot_config_.get( "converters.compressed_camera.enabled", true);;
+  size_t compcamera_fps             = boot_config_.get( "converters.compressed_camera.fps", 10);
+  size_t compcamera_recorder_fps    = boot_config_.get( "converters.compressed_camera.recorder_fps", 5);
+  
   /*
    * The info converter will be called once after it was added to the priority queue. Once it is its turn to be called, its
    * callAll method will be triggered (because InfoPublisher is considered to always have subscribers, isSubscribed always
@@ -736,6 +744,18 @@ void Driver::registerDefaultConverter()
       registerConverter( icc, icp, icr );
     }
   } // endif PEPPER
+  
+  if ( compcamera_enabled )
+  {
+      boost::shared_ptr<publisher::CompressedCameraPublisher> dcp = boost::make_shared<publisher::CompressedCameraPublisher>( "compressed_camera/front/image_raw", AL::kTopCamera );
+      boost::shared_ptr<recorder::CompressedCameraRecorder> dcr = boost::make_shared<recorder::CompressedCameraRecorder>( "compressed_camera/front", compcamera_recorder_fps );
+      boost::shared_ptr<converter::CompressedCameraConverter> dcc = boost::make_shared<converter::CompressedCameraConverter>( "compressed_camera", compcamera_fps, sessionPtr_);
+      dcc->registerCallback( message_actions::PUBLISH, boost::bind(&publisher::CompressedCameraPublisher::publish, dcp, _1) );
+      dcc->registerCallback( message_actions::RECORD, boost::bind(&recorder::CompressedCameraRecorder::write, dcr, _1) );
+      dcc->registerCallback( message_actions::LOG, boost::bind(&recorder::CompressedCameraRecorder::bufferize, dcr, _1) );
+      registerConverter( dcc, dcp, dcr );
+  }
+
 
   /** Joint States */
   if ( joint_states_enabled )
