@@ -911,6 +911,15 @@ void Driver::registerDefaultConverter()
       event_map_.find("tts_done")->second.isPublishing(true);
     }
   }
+  boost::shared_ptr<MemoryStringEventRegister> event_register_naoqi_notification = boost::make_shared<MemoryStringEventRegister>( "naoqi_notification", "Naoqi_Driver/Notification", 0, sessionPtr_);
+  insertEventConverter("naoqi_notification", event_register_naoqi_notification);
+  if (keep_looping) {
+    event_map_.find("naoqi_notification")->second.startProcess();
+  }
+  if (publish_enabled_) {
+    event_map_.find("naoqi_notification")->second.isPublishing(true);
+  }
+
 }
 
 // public interface here
