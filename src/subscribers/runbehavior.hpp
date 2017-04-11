@@ -30,6 +30,10 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 
+#include <queue>
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
+
 namespace naoqi
 {
 namespace subscriber
@@ -51,8 +55,11 @@ private:
   qi::AnyObject p_bm_;
   ros::Subscriber sub_runbehavior_;
 
-
-
+    boost::thread processCb_;
+    std::queue<std::string> behaviors_;
+    void processCb();
+    boost::mutex mutex_;
+    boost::condition cond_;
 }; // class RunBehaviorSubscriber
 
 } // subscriber

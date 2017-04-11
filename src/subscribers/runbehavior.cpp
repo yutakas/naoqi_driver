@@ -20,7 +20,6 @@
  */
 #include "runbehavior.hpp"
 
-
 namespace naoqi
 {
 namespace subscriber
@@ -29,7 +28,8 @@ namespace subscriber
 RunBehaviorSubscriber::RunBehaviorSubscriber( const std::string& name, const std::string& runbehavior_topic, const qi::SessionPtr& session ):
   runbehavior_topic_(runbehavior_topic),
   BaseSubscriber( name, runbehavior_topic, session ),
-  p_bm_( session->service("ALBehaviorManager") )
+  p_bm_( session->service("ALBehaviorManager") ),
+  processCb_ (boost::thread(&RunBehaviorSubscriber::processCb, this))
 {}
 
 void RunBehaviorSubscriber::reset( ros::NodeHandle& nh )
@@ -41,8 +41,42 @@ void RunBehaviorSubscriber::reset( ros::NodeHandle& nh )
 
 void RunBehaviorSubscriber::runbehavior_callback( const std_msgs::StringConstPtr& string_msg )
 {
-  p_bm_.async<void>("runBehavior", string_msg->data);
+    boost::mutex::scoped_lock  lock(mutex_);
+    // p_bm_.call<void>("runBehavior", string_msg->data);
+    // p_bm_.async<void>("runBehavior", string_msg->data);
+    behaviors_.push(string_msg->data);
+    cond_.notify_all();
 }
 
+void RunBehaviorSubscriber::processCb()
+{
+    while(true)
+    {
+        { 
+        boost::unique_lock<boost::mutex> lock(mutex_);
+        while(behaviors_.empty()) { cond_.wait(lock); }
+        }
+        // std::cout << __FILE__ << " " << __func__ << " : " << std::endl;        
+        while (!behaviors_.empty())
+        {
+            std::string behavior;
+            {
+            boost::mutex::scoped_lock lock(mutex_);
+            behavior = behaviors_.front();
+            behaviors_.pop();
+            }
+            // std::cout << __FILE__ << " " << __func__ << " : " << behavior << std::endl;    
+            try
+            {
+                p_bm_.call<void>("runBehavior", behavior);
+                ros::Duration(0.1).sleep();
+            }
+            catch( const std::exception& e )
+            {
+                std::cerr << "Exception caught in RunBehaviorSubscriber " << e.what() << std::endl;
+            }
+        }
+    }
+}
 } //publisher
 } // naoqi
