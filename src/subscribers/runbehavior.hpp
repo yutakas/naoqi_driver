@@ -43,8 +43,8 @@ class RunBehaviorSubscriber: public BaseSubscriber<RunBehaviorSubscriber>
 {
 public:
   RunBehaviorSubscriber( const std::string& name, const std::string& runbehavior_topic, const qi::SessionPtr& session );
-  ~RunBehaviorSubscriber(){}
-
+  ~RunBehaviorSubscriber();
+  
   void reset( ros::NodeHandle& nh );
   void runbehavior_callback( const std_msgs::StringConstPtr& speech_msg );
 
@@ -60,6 +60,7 @@ private:
     void processCb();
     boost::mutex mutex_;
     boost::condition cond_;
+    bool running_;
 }; // class RunBehaviorSubscriber
 
 } // subscriber

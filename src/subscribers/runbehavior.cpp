@@ -26,14 +26,34 @@ namespace subscriber
 {
 
 RunBehaviorSubscriber::RunBehaviorSubscriber( const std::string& name, const std::string& runbehavior_topic, const qi::SessionPtr& session ):
+  running_(false),
   runbehavior_topic_(runbehavior_topic),
   BaseSubscriber( name, runbehavior_topic, session ),
-  p_bm_( session->service("ALBehaviorManager") ),
-  processCb_ (boost::thread(&RunBehaviorSubscriber::processCb, this))
+  p_bm_( session->service("ALBehaviorManager") )
 {}
+
+RunBehaviorSubscriber::~RunBehaviorSubscriber()
+{
+  if (!running_)
+  {
+    running_ = false;
+    while (!behaviors_.empty())
+    {
+        behaviors_.pop();
+    }
+    cond_.notify_all();
+    processCb_.join();
+  }
+}
+
 
 void RunBehaviorSubscriber::reset( ros::NodeHandle& nh )
 {
+  if (!running_)
+  {
+    processCb_ = boost::thread(&RunBehaviorSubscriber::processCb, this);
+    running_ = false;
+  }
   sub_runbehavior_ = nh.subscribe( runbehavior_topic_, 10, &RunBehaviorSubscriber::runbehavior_callback, this );
 
   is_initialized_ = true;
@@ -41,16 +61,19 @@ void RunBehaviorSubscriber::reset( ros::NodeHandle& nh )
 
 void RunBehaviorSubscriber::runbehavior_callback( const std_msgs::StringConstPtr& string_msg )
 {
-    boost::mutex::scoped_lock  lock(mutex_);
-    // p_bm_.call<void>("runBehavior", string_msg->data);
-    // p_bm_.async<void>("runBehavior", string_msg->data);
-    behaviors_.push(string_msg->data);
-    cond_.notify_all();
+    if (running_)
+    {
+        boost::mutex::scoped_lock  lock(mutex_);
+        // p_bm_.call<void>("runBehavior", string_msg->data);
+        // p_bm_.async<void>("runBehavior", string_msg->data);
+        behaviors_.push(string_msg->data);
+        cond_.notify_all();
+    }
 }
 
 void RunBehaviorSubscriber::processCb()
 {
-    while(true)
+    while(running_)
     {
         { 
         boost::unique_lock<boost::mutex> lock(mutex_);
