@@ -52,7 +52,7 @@ void RunBehaviorSubscriber::reset( ros::NodeHandle& nh )
   if (!running_)
   {
     processCb_ = boost::thread(&RunBehaviorSubscriber::processCb, this);
-    running_ = false;
+    running_ = true;
   }
   sub_runbehavior_ = nh.subscribe( runbehavior_topic_, 10, &RunBehaviorSubscriber::runbehavior_callback, this );
 
