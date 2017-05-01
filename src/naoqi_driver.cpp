@@ -911,6 +911,7 @@ void Driver::registerDefaultConverter()
       event_map_.find("tts_done")->second.isPublishing(true);
     }
   }
+  
   boost::shared_ptr<MemoryStringEventRegister> event_register_naoqi_notification = boost::make_shared<MemoryStringEventRegister>( "naoqi_notification", "Naoqi_Driver/Notification", 0, sessionPtr_);
   insertEventConverter("naoqi_notification", event_register_naoqi_notification);
   if (keep_looping) {
@@ -920,6 +921,8 @@ void Driver::registerDefaultConverter()
     event_map_.find("naoqi_notification")->second.isPublishing(true);
   }
 
+   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::FloatStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::FloatStamped>, converter::MemoryFloatConverter>( "Device/SubDeviceList/Battery/Charge/Sensor/Value", 0.5);
+   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::FloatStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::FloatStamped>, converter::MemoryFloatConverter>( "Device/SubDeviceList/Battery/Current/Sensor/Value", 0.5);
 }
 
 // public interface here
