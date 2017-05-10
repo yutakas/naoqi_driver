@@ -101,6 +101,9 @@ private:
   bool isPublishing_;
   bool isRecording_;
   bool isDumping_;
+  
+  uint32_t sec_;
+  uint32_t sizeInSec_;
 
 }; // class
 
