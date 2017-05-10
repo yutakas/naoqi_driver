@@ -8,4 +8,7 @@
 
   <node pkg="naoqi_driver" type="naoqi_driver_node" name="$(arg namespace)" required="true" args="--qi-url=tcp://$(arg nao_ip):$(arg nao_port) --roscore_ip=$(arg roscore_ip) --network_interface=$(arg network_interface) --namespace=$(arg namespace)" output="screen" />
 
+  <param name="nao_ip" value="$(arg nao_ip)" />
+  <param name="nao_port" value="$(arg nao_port)" />
+
 </launch>
