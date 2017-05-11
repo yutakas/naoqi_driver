@@ -282,10 +282,11 @@ void Driver::rosLoop()
   } // while loop
   
   std::cout << __FILE__ << " " << __func__ << "  1" << std::endl;
-  if (isRosspinThreadRunning)
-  {
-    rosspinThread.join();
-  }
+  // we don't have to wait for this thread.
+  // if (isRosspinThreadRunning)
+  // {
+    // rosspinThread.join();
+  // }
 }
 
 std::string Driver::minidump(const std::string& prefix)
