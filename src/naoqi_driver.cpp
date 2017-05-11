@@ -929,7 +929,9 @@ void Driver::registerDefaultConverter()
     event_map_.find("naoqi_notification")->second.isPublishing(true);
   }
 
-   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::FloatStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::FloatStamped>, converter::MemoryFloatConverter>( "Device/SubDeviceList/Battery/Charge/Sensor/Value", 0.5);
+   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::IntStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::IntStamped>, converter::MemoryIntConverter>( "Device/SubDeviceList/Battery/Charge/Sensor/Charging", 0.20);
+   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::IntStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::IntStamped>, converter::MemoryIntConverter>( "Device/SubDeviceList/Battery/Charge/Sensor/TimeToEmpty", 0.20);
+   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::FloatStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::FloatStamped>, converter::MemoryFloatConverter>( "Device/SubDeviceList/Battery/Charge/Sensor/Value", 0.20);
    _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::FloatStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::FloatStamped>, converter::MemoryFloatConverter>( "Device/SubDeviceList/Battery/Current/Sensor/Value", 0.5);
 }
 
