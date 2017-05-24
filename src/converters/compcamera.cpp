@@ -51,7 +51,7 @@ CompressedCameraConverter::CompressedCameraConverter(const std::string& name, co
 {
     p_sessionManager_ = session->service("ALServiceManager");
     p_sessionManager_.call<qi::AnyValue>("startService", "CompressedImageService");
-    ros::Duration(2.0).sleep();
+    ros::Duration(5.0).sleep();
     p_video_ = session->service("CompressedImageService");
 }
 
