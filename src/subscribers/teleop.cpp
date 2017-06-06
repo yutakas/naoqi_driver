@@ -29,9 +29,18 @@ namespace subscriber
 TeleopSubscriber::TeleopSubscriber( const std::string& name, const std::string& cmd_vel_topic, const std::string& joint_angles_topic, const qi::SessionPtr& session ):
   cmd_vel_topic_(cmd_vel_topic),
   joint_angles_topic_(joint_angles_topic),
-  BaseSubscriber( name, cmd_vel_topic, session ),
-  p_motion_( session->service("ALMotion") )
-{}
+  BaseSubscriber( name, cmd_vel_topic, session )
+{
+#if 1
+  p_sessionManager_ = session->service("ALServiceManager");
+  p_sessionManager_.call<qi::AnyValue>("startService", "NavigationWatcher");
+  ros::Duration(5.0).sleep();
+  p_motion_ = session->service("NavigationWatcher");
+#else
+  p_motion_ = session->service("ALMotion");
+#endif
+    
+}
 
 void TeleopSubscriber::reset( ros::NodeHandle& nh )
 {
