@@ -45,6 +45,7 @@ set(
   src/subscribers/speech.cpp
   src/subscribers/speechlanguage.cpp
   src/subscribers/runbehavior.cpp
+  src/subscribers/playaudio.cpp
   )
 
 set(
