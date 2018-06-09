@@ -27,6 +27,7 @@
 #include "converters/audio.hpp"
 #include "converters/touch.hpp"
 #include "converters/camera.hpp"
+#include "converters/compcamera.hpp"
 #include "converters/diagnostics.hpp"
 #include "converters/imu.hpp"
 #include "converters/info.hpp"
@@ -46,6 +47,7 @@
  */
 #include "publishers/basic.hpp"
 #include "publishers/camera.hpp"
+#include "publishers/compcamera.hpp"
 #include "publishers/info.hpp"
 #include "publishers/joint_state.hpp"
 #include "publishers/log.hpp"
@@ -62,7 +64,10 @@
  */
 #include "subscribers/teleop.hpp"
 #include "subscribers/moveto.hpp"
+#include "subscribers/playaudio.hpp"
 #include "subscribers/speech.hpp"
+#include "subscribers/speechlanguage.hpp"
+#include "subscribers/runbehavior.hpp"
 
 
 /*
@@ -78,6 +83,7 @@
 #include "recorder/basic.hpp"
 #include "recorder/basic_event.hpp"
 #include "recorder/camera.hpp"
+#include "recorder/compcamera.hpp"
 #include "recorder/diagnostics.hpp"
 #include "recorder/joint_state.hpp"
 #include "recorder/sonar.hpp"
@@ -88,6 +94,7 @@
 #include "event/basic.hpp"
 #include "event/audio.hpp"
 #include "event/touch.hpp"
+#include "event/memory.hpp"
 
 /*
  * STATIC FUNCTIONS INCLUDE
@@ -174,10 +181,31 @@ void Driver::stopService() {
   event_map_.clear();
 }
 
+void Driver::rosSpinLoop()
+{
+  std::cout << __FILE__ << " " << __func__ << "  0" << std::endl;
+#if 1
+  ros::MultiThreadedSpinner mtspinner;
+  mtspinner.spin();
+#else
+  while( keep_looping )
+  {
+    if ( publish_enabled_ )
+    {
+      ros::spinOnce();
+    }
+  } 
+#endif
+  std::cout << __FILE__ << " " << __func__ << "  1" << std::endl;
+}
 
 void Driver::rosLoop()
 {
   static std::vector<message_actions::MessageAction> actions;
+  std::cout << __FILE__ << " " << __func__ << "  0" << std::endl;
+
+  boost::thread rosspinThread;
+  bool isRosspinThreadRunning = false;
 
 //  ros::Time::init();
   while( keep_looping )
@@ -245,15 +273,23 @@ void Driver::rosLoop()
       else // conv_queue is empty.
       {
         // sleep one second
-        ros::Duration(1).sleep();
+        ros::Duration(0.1).sleep();
       }
     } // mutex scope
 
-    if ( publish_enabled_ )
+    if (!isRosspinThreadRunning)
     {
-      ros::spinOnce();
+      rosspinThread = boost::thread( &Driver::rosSpinLoop, this );
+      isRosspinThreadRunning = true;
     }
   } // while loop
+  
+  std::cout << __FILE__ << " " << __func__ << "  1" << std::endl;
+  // we don't have to wait for this thread.
+  // if (isRosspinThreadRunning)
+  // {
+    // rosspinThread.join();
+  // }
 }
 
 std::string Driver::minidump(const std::string& prefix)
@@ -593,6 +629,12 @@ void Driver::registerDefaultConverter()
   bool bumper_enabled                 = boot_config_.get( "converters.bumper.enabled", true);
   bool hand_enabled                   = boot_config_.get( "converters.touch_hand.enabled", true);
   bool head_enabled                   = boot_config_.get( "converters.touch_head.enabled", true);
+  bool texttospeech_enabled           = boot_config_.get( "converters.texttospeech.enabled", true);
+  
+  bool compcamera_enabled             = boot_config_.get( "converters.compressed_camera.enabled", true);;
+  size_t compcamera_fps             = boot_config_.get( "converters.compressed_camera.fps", 10);
+  size_t compcamera_recorder_fps    = boot_config_.get( "converters.compressed_camera.recorder_fps", 5);
+  
   /*
    * The info converter will be called once after it was added to the priority queue. Once it is its turn to be called, its
    * callAll method will be triggered (because InfoPublisher is considered to always have subscribers, isSubscribed always
@@ -713,6 +755,18 @@ void Driver::registerDefaultConverter()
       registerConverter( icc, icp, icr );
     }
   } // endif PEPPER
+  
+  if ( compcamera_enabled )
+  {
+      boost::shared_ptr<publisher::CompressedCameraPublisher> dcp = boost::make_shared<publisher::CompressedCameraPublisher>( "compressed_camera/front/image_raw", AL::kTopCamera );
+      boost::shared_ptr<recorder::CompressedCameraRecorder> dcr = boost::make_shared<recorder::CompressedCameraRecorder>( "compressed_camera/front", compcamera_recorder_fps );
+      boost::shared_ptr<converter::CompressedCameraConverter> dcc = boost::make_shared<converter::CompressedCameraConverter>( "compressed_camera", compcamera_fps, sessionPtr_);
+      dcc->registerCallback( message_actions::PUBLISH, boost::bind(&publisher::CompressedCameraPublisher::publish, dcp, _1) );
+      dcc->registerCallback( message_actions::RECORD, boost::bind(&recorder::CompressedCameraRecorder::write, dcr, _1) );
+      dcc->registerCallback( message_actions::LOG, boost::bind(&recorder::CompressedCameraRecorder::bufferize, dcr, _1) );
+      registerConverter( dcc, dcp, dcr );
+  }
+
 
   /** Joint States */
   if ( joint_states_enabled )
@@ -847,9 +901,42 @@ void Driver::registerDefaultConverter()
     lc->registerCallback( message_actions::LOG, boost::bind(&recorder::BasicRecorder<nav_msgs::Odometry>::bufferize, lr, _1) );
     registerConverter( lc, lp, lr );
   }
+  
+  // text to speech event
+  if (texttospeech_enabled)
+  {
+    boost::shared_ptr<MemoryBoolEventRegister> event_register_tts_start = boost::make_shared<MemoryBoolEventRegister>( "tts_start", "ALTextToSpeech/TextStarted", 0, sessionPtr_);
+    insertEventConverter("tts_start", event_register_tts_start);
+    if (keep_looping) {
+      event_map_.find("tts_start")->second.startProcess();
+    }
+    if (publish_enabled_) {
+      event_map_.find("tts_start")->second.isPublishing(true);
+    }
+    boost::shared_ptr<MemoryBoolEventRegister> event_register_tts_done = boost::make_shared<MemoryBoolEventRegister>( "tts_done", "ALTextToSpeech/TextDone", 0, sessionPtr_);
+    insertEventConverter("tts_done", event_register_tts_done);
+    if (keep_looping) {
+      event_map_.find("tts_done")->second.startProcess();
+    }
+    if (publish_enabled_) {
+      event_map_.find("tts_done")->second.isPublishing(true);
+    }
+  }
+  
+  boost::shared_ptr<MemoryStringEventRegister> event_register_naoqi_notification = boost::make_shared<MemoryStringEventRegister>( "naoqi_notification", "Naoqi_Driver/Notification", 0, sessionPtr_);
+  insertEventConverter("naoqi_notification", event_register_naoqi_notification);
+  if (keep_looping) {
+    event_map_.find("naoqi_notification")->second.startProcess();
+  }
+  if (publish_enabled_) {
+    event_map_.find("naoqi_notification")->second.isPublishing(true);
+  }
 
+   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::IntStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::IntStamped>, converter::MemoryIntConverter>( "Device/SubDeviceList/Battery/Charge/Sensor/Charging", 0.20);
+   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::IntStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::IntStamped>, converter::MemoryIntConverter>( "Device/SubDeviceList/Battery/Charge/Sensor/TimeToEmpty", 0.20);
+   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::FloatStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::FloatStamped>, converter::MemoryFloatConverter>( "Device/SubDeviceList/Battery/Charge/Sensor/Value", 0.20);
+   _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::FloatStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::FloatStamped>, converter::MemoryFloatConverter>( "Device/SubDeviceList/Battery/Current/Sensor/Value", 0.5);
 }
-
 
 // public interface here
 void Driver::registerSubscriber( subscriber::Subscriber sub )
@@ -880,6 +967,9 @@ void Driver::registerDefaultSubscriber()
   registerSubscriber( boost::make_shared<naoqi::subscriber::TeleopSubscriber>("teleop", "/cmd_vel", "/joint_angles", sessionPtr_) );
   registerSubscriber( boost::make_shared<naoqi::subscriber::MovetoSubscriber>("moveto", "/move_base_simple/goal", sessionPtr_, tf2_buffer_) );
   registerSubscriber( boost::make_shared<naoqi::subscriber::SpeechSubscriber>("speech", "/speech", sessionPtr_) );
+  registerSubscriber( boost::make_shared<naoqi::subscriber::RunBehaviorSubscriber>("runbehavior", "/pepper_robot/runbehavior", sessionPtr_) );
+  registerSubscriber( boost::make_shared<naoqi::subscriber::SpeechLanguageSubscriber>("speechlanguage", "/pepper_robot/speechlanguage", sessionPtr_) );
+  registerSubscriber( boost::make_shared<naoqi::subscriber::PlayAudioSubscriber>("playaudio", "/pepper_robot/playaudio", sessionPtr_) );
 }
 
 void Driver::registerService( service::Service srv )
@@ -1134,11 +1224,13 @@ void Driver::stopLogging()
 
 void Driver::startRosLoop()
 {
-  if (publisherThread_.get_id() ==  boost::thread::id())
-    publisherThread_ = boost::thread( &Driver::rosLoop, this );
   for(EventIter iterator = event_map_.begin(); iterator != event_map_.end(); iterator++)
   {
     iterator->second.startProcess();
+  }
+  if (publisherThread_.get_id() ==  boost::thread::id())
+  {
+    publisherThread_ = boost::thread( &Driver::rosLoop, this );
   }
   // Create the publishing thread if needed
   keep_looping = true;

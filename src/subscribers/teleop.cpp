@@ -29,9 +29,18 @@ namespace subscriber
 TeleopSubscriber::TeleopSubscriber( const std::string& name, const std::string& cmd_vel_topic, const std::string& joint_angles_topic, const qi::SessionPtr& session ):
   cmd_vel_topic_(cmd_vel_topic),
   joint_angles_topic_(joint_angles_topic),
-  BaseSubscriber( name, cmd_vel_topic, session ),
-  p_motion_( session->service("ALMotion") )
-{}
+  BaseSubscriber( name, cmd_vel_topic, session )
+{
+#if 1
+  p_sessionManager_ = session->service("ALServiceManager");
+  p_sessionManager_.call<qi::AnyValue>("startService", "NavigationWatcher");
+  ros::Duration(5.0).sleep();
+  p_motion_ = session->service("NavigationWatcher");
+#else
+  p_motion_ = session->service("ALMotion");
+#endif
+    
+}
 
 void TeleopSubscriber::reset( ros::NodeHandle& nh )
 {
@@ -43,12 +52,16 @@ void TeleopSubscriber::reset( ros::NodeHandle& nh )
 
 void TeleopSubscriber::cmd_vel_callback( const geometry_msgs::TwistConstPtr& twist_msg )
 {
+  // reduce security distance  
+  p_motion_.async<void>("setOrthogonalSecurityDistance", 0.1 );
+  p_motion_.async<void>("setTangentialSecurityDistance", 0.1 ); 
+    
   // no need to check for max velocity since motion clamps the velocities internally
   const float& vel_x = twist_msg->linear.x;
   const float& vel_y = twist_msg->linear.y;
   const float& vel_th = twist_msg->angular.z;
 
-  std::cout << "going to move x: " << vel_x << " y: " << vel_y << " th: " << vel_th << std::endl;
+  std::cout << "teleop going to move x: " << vel_x << " y: " << vel_y << " th: " << vel_th << std::endl;
   p_motion_.async<void>("move", vel_x, vel_y, vel_th );
 }
 

@@ -16,8 +16,8 @@
  */
 
 
-#ifndef TELEOP_SUBSCRIBER_HPP
-#define TELEOP_SUBSCRIBER_HPP
+#ifndef PLAYAUDIO_SUBSCRIBER_HPP
+#define PLAYAUDIO_SUBSCRIBER_HPP
 
 /*
  * LOCAL includes
@@ -28,37 +28,32 @@
  * ROS includes
  */
 #include <ros/ros.h>
-#include <geometry_msgs/Twist.h>
-#include <naoqi_bridge_msgs/JointAnglesWithSpeed.h>
+#include <std_msgs/UInt8MultiArray.h>
 
 namespace naoqi
 {
 namespace subscriber
 {
 
-class TeleopSubscriber: public BaseSubscriber<TeleopSubscriber>
+class PlayAudioSubscriber: public BaseSubscriber<PlayAudioSubscriber>
 {
 public:
-  TeleopSubscriber( const std::string& name, const std::string& cmd_vel_topic, const std::string& joint_angles_topic, const qi::SessionPtr& session );
-  ~TeleopSubscriber(){}
+  PlayAudioSubscriber( const std::string& name, const std::string& speech_topic, const qi::SessionPtr& session );
+  ~PlayAudioSubscriber(){}
 
   void reset( ros::NodeHandle& nh );
-  void cmd_vel_callback( const geometry_msgs::TwistConstPtr& twist_msg );
-  void joint_angles_callback( const naoqi_bridge_msgs::JointAnglesWithSpeedConstPtr& js_msg );
+  void playaudio_callback( const std_msgs::UInt8MultiArrayConstPtr& speech_msg );
 
 private:
 
-  std::string cmd_vel_topic_;
-  std::string joint_angles_topic_;
+  std::string playaudio_topic_;
 
-  qi::AnyObject p_sessionManager_;
-  qi::AnyObject p_motion_;
-  ros::Subscriber sub_cmd_vel_;
-  ros::Subscriber sub_joint_angles_;
+  qi::AnyObject p_tts_;
+  ros::Subscriber sub_playaudio_;
 
 
 
-}; // class Teleop
+}; // class PlayAudio
 
 } // subscriber
 }// naoqi

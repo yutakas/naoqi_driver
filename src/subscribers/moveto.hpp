@@ -46,6 +46,7 @@ public:
   void callback( const geometry_msgs::PoseStampedConstPtr& pose_msg );
 
 private:
+  qi::AnyObject p_sessionManager_;
   qi::AnyObject p_motion_;
   ros::Subscriber sub_moveto_;
   boost::shared_ptr<tf2_ros::Buffer> tf2_buffer_;

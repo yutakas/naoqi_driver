@@ -36,9 +36,18 @@ namespace subscriber
 MovetoSubscriber::MovetoSubscriber( const std::string& name, const std::string& topic, const qi::SessionPtr& session,
                                     const boost::shared_ptr<tf2_ros::Buffer>& tf2_buffer):
   BaseSubscriber( name, topic, session ),
-  p_motion_( session->service("ALMotion") ),
   tf2_buffer_( tf2_buffer )
-{}
+{
+#if 1
+  p_sessionManager_ = session->service("ALServiceManager");
+  p_sessionManager_.call<qi::AnyValue>("startService", "NavigationWatcher");
+  ros::Duration(5.0).sleep();
+  p_motion_ = session->service("NavigationWatcher");
+#else
+  p_motion_ = session->service("ALMotion");
+#endif
+    
+}
 
 void MovetoSubscriber::reset( ros::NodeHandle& nh )
 {
@@ -48,11 +57,15 @@ void MovetoSubscriber::reset( ros::NodeHandle& nh )
 
 void MovetoSubscriber::callback( const geometry_msgs::PoseStampedConstPtr& pose_msg )
 {
+  // reduce security distance  
+  p_motion_.async<void>("setOrthogonalSecurityDistance", 0.1 );
+  p_motion_.async<void>("setTangentialSecurityDistance", 0.1 ); 
+    
   if ( pose_msg->header.frame_id == "base_footprint" )
   {
     double yaw = helpers::transform::getYaw(pose_msg->pose);
 
-    std::cout << "going to move x: " <<  pose_msg->pose.position.x << " y: " << pose_msg->pose.position.y << " z: " << pose_msg->pose.position.z << " yaw: " << yaw << std::endl;
+    std::cout << "moveto going to move x: " <<  pose_msg->pose.position.x << " y: " << pose_msg->pose.position.y << " z: " << pose_msg->pose.position.z << " yaw: " << yaw << std::endl;
     p_motion_.async<void>("moveTo", pose_msg->pose.position.x, pose_msg->pose.position.y, yaw);
   }
   else{

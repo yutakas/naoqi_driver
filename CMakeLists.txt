@@ -7,6 +7,7 @@ set(
   src/converters/audio.cpp
   src/converters/touch.cpp
   src/converters/camera.cpp
+  src/converters/compcamera.cpp
   src/converters/diagnostics.cpp
   src/converters/imu.cpp
   src/converters/info.cpp
@@ -30,6 +31,7 @@ set(
 set(
   PUBLISHER_SRC
   src/publishers/camera.cpp
+  src/publishers/compcamera.cpp
   src/publishers/info.cpp
   src/publishers/joint_state.cpp
   src/publishers/log.cpp
@@ -41,6 +43,9 @@ set(
   src/subscribers/teleop.cpp
   src/subscribers/moveto.cpp
   src/subscribers/speech.cpp
+  src/subscribers/speechlanguage.cpp
+  src/subscribers/runbehavior.cpp
+  src/subscribers/playaudio.cpp
   )
 
 set(
@@ -53,6 +58,7 @@ set(
 set(
   RECORDER_SRC
   src/recorder/camera.cpp
+  src/recorder/compcamera.cpp
   src/recorder/diagnostics.cpp
   src/recorder/joint_state.cpp
   src/recorder/log.cpp
@@ -68,6 +74,7 @@ set(
   src/event/basic.hpp
   src/event/audio.cpp
   src/event/touch.cpp
+  src/event/memory.cpp
   )
 
 # use catkin if qibuild is not found

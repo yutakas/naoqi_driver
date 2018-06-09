@@ -172,6 +172,19 @@ void AudioEventRegister::processRemote(int nbOfChannels, int samplesByChannel, q
   int16_t* remoteBuffer = (int16_t*)buffer_pointer.first;
   int bufferSize = nbOfChannels * samplesByChannel;
   msg.data = std::vector<int16_t>(remoteBuffer, remoteBuffer+bufferSize);
+  
+#if 1
+  if (sec_ != msg.header.stamp.sec)
+  {
+      std::cout << "Audio " << msg.header.stamp.sec << ":" << msg.header.stamp.nsec << " - " << sizeInSec_ <<  std::endl;
+      sizeInSec_ = (uint32_t)bufferSize;
+      sec_ = msg.header.stamp.sec;
+  }
+  else
+  {
+      sizeInSec_ += (uint32_t)bufferSize;
+  }
+#endif
 
   std::vector<message_actions::MessageAction> actions;
   boost::mutex::scoped_lock callback_lock(processing_mutex_);

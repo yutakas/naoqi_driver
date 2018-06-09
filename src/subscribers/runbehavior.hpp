@@ -16,8 +16,8 @@
  */
 
 
-#ifndef TELEOP_SUBSCRIBER_HPP
-#define TELEOP_SUBSCRIBER_HPP
+#ifndef RUNBEHAVIOR_SUBSCRIBER_HPP
+#define RUNBEHAVIOR_SUBSCRIBER_HPP
 
 /*
  * LOCAL includes
@@ -28,37 +28,40 @@
  * ROS includes
  */
 #include <ros/ros.h>
-#include <geometry_msgs/Twist.h>
-#include <naoqi_bridge_msgs/JointAnglesWithSpeed.h>
+#include <std_msgs/String.h>
+
+#include <queue>
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace naoqi
 {
 namespace subscriber
 {
 
-class TeleopSubscriber: public BaseSubscriber<TeleopSubscriber>
+class RunBehaviorSubscriber: public BaseSubscriber<RunBehaviorSubscriber>
 {
 public:
-  TeleopSubscriber( const std::string& name, const std::string& cmd_vel_topic, const std::string& joint_angles_topic, const qi::SessionPtr& session );
-  ~TeleopSubscriber(){}
-
+  RunBehaviorSubscriber( const std::string& name, const std::string& runbehavior_topic, const qi::SessionPtr& session );
+  ~RunBehaviorSubscriber();
+  
   void reset( ros::NodeHandle& nh );
-  void cmd_vel_callback( const geometry_msgs::TwistConstPtr& twist_msg );
-  void joint_angles_callback( const naoqi_bridge_msgs::JointAnglesWithSpeedConstPtr& js_msg );
+  void runbehavior_callback( const std_msgs::StringConstPtr& speech_msg );
 
 private:
 
-  std::string cmd_vel_topic_;
-  std::string joint_angles_topic_;
+  std::string runbehavior_topic_;
 
-  qi::AnyObject p_sessionManager_;
-  qi::AnyObject p_motion_;
-  ros::Subscriber sub_cmd_vel_;
-  ros::Subscriber sub_joint_angles_;
+  qi::AnyObject p_bm_;
+  ros::Subscriber sub_runbehavior_;
 
-
-
-}; // class Teleop
+    boost::thread processCb_;
+    std::queue<std::string> behaviors_;
+    void processCb();
+    boost::mutex mutex_;
+    boost::condition cond_;
+    bool running_;
+}; // class RunBehaviorSubscriber
 
 } // subscriber
 }// naoqi

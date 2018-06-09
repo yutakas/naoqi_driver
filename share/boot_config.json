@@ -4,14 +4,14 @@
   {
     "front_camera":
     {
-      "enabled"       : true,
-      "resolution"    : 1,
-      "fps"           : 10,
-      "recorder_fps"  : 5
+      "enabled"       : false,
+      "resolution"    : 3,
+      "fps"           : 4,
+      "recorder_fps"  : 1
     },
     "bottom_camera":
     {
-      "enabled"       : true,
+      "enabled"       : false,
       "resolution"    : 1,
       "fps"           : 10,
       "recorder_fps"  : 5
@@ -20,8 +20,8 @@
     {
       "enabled"       : true,
       "resolution"    : 1,
-      "fps"           : 10,
-      "recorder_fps"  : 5
+      "fps"           : 5,
+      "recorder_fps"  : 1
     },
     "ir_camera":
     {
@@ -90,6 +90,12 @@
     {
       "enabled"       : true,
       "frequency"     : 15
+    },
+    "compressed_camera":
+    {
+      "enabled"       : true,
+      "fps"           : 2,
+      "recorder_fps"  : 1
     }
   }
 }

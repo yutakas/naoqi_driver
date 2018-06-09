@@ -124,7 +124,7 @@ LogConverter::LogConverter( const std::string& name, float frequency, const qi::
 
   listener_ = logger_->getListener();
   set_qi_logger_level();
-  listener_->onLogMessage.connect(logCallback);
+  // listener_->onLogMessage.connect(logCallback);
 }
 
 void LogConverter::registerCallback( const message_actions::MessageAction action, Callback_t cb )

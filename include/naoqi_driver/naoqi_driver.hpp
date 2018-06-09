@@ -267,6 +267,7 @@ private:
     registerConverter( mfc, mfp, mfr );
   }
 
+  void rosSpinLoop();
   void rosLoop();
 
   boost::scoped_ptr<ros::NodeHandle> nhPtr_;

@@ -59,9 +59,15 @@ const sensor_msgs::CameraInfo& getCameraInfo( int camera_source, int resolution 
   /** RETURN VALUE OPTIMIZATION (RVO)
   * since there is no C++11 initializer list nor lamda functions
   */
+  std::cout  << camera_source << "!!!!!!!!!!!!! resolution " << resolution << std::endl;
   if ( camera_source == AL::kTopCamera)
   {
-    if ( resolution == AL::kVGA )
+    if ( resolution == AL::k4VGA )
+    {
+      static const sensor_msgs::CameraInfo cam_info_msg = createCameraInfoTOP4VGA();
+      return cam_info_msg;
+    }
+    else if ( resolution == AL::kVGA )
     {
       static const sensor_msgs::CameraInfo cam_info_msg = createCameraInfoTOPVGA();
       return cam_info_msg;
