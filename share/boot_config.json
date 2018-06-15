@@ -4,9 +4,9 @@
   {
     "front_camera":
     {
-      "enabled"       : false,
-      "resolution"    : 3,
-      "fps"           : 4,
+      "enabled"       : true,
+      "resolution"    : 2,
+      "fps"           : 30,
       "recorder_fps"  : 1
     },
     "bottom_camera":
@@ -93,7 +93,7 @@
     },
     "compressed_camera":
     {
-      "enabled"       : true,
+      "enabled"       : false,
       "fps"           : 2,
       "recorder_fps"  : 1
     }
