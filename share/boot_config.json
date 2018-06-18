@@ -6,7 +6,7 @@
     {
       "enabled"       : true,
       "resolution"    : 2,
-      "fps"           : 4,
+      "fps"           : 30,
       "recorder_fps"  : 1
     },
     "bottom_camera":

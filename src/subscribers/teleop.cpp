@@ -36,6 +36,7 @@ TeleopSubscriber::TeleopSubscriber( const std::string& name, const std::string& 
   p_sessionManager_.call<qi::AnyValue>("startService", "NavigationWatcher");
   ros::Duration(5.0).sleep();
   p_motion_ = session->service("NavigationWatcher");
+  p_motionAngle_ = session->service("ALMotion");
 #else
   p_motion_ = session->service("ALMotion");
 #endif
@@ -69,11 +70,11 @@ void TeleopSubscriber::joint_angles_callback( const naoqi_bridge_msgs::JointAngl
 {
   if ( js_msg->relative==0 )
   {
-    p_motion_.async<void>("setAngles", js_msg->joint_names, js_msg->joint_angles, js_msg->speed);
+    p_motionAngle_.async<void>("setAngles", js_msg->joint_names, js_msg->joint_angles, js_msg->speed);
   }
   else
   {
-    p_motion_.async<void>("changeAngles", js_msg->joint_names, js_msg->joint_angles, js_msg->speed);
+    p_motionAngle_.async<void>("changeAngles", js_msg->joint_names, js_msg->joint_angles, js_msg->speed);
   }
 }
 

@@ -53,6 +53,7 @@ private:
 
   qi::AnyObject p_sessionManager_;
   qi::AnyObject p_motion_;
+  qi::AnyObject p_motionAngle_;
   ros::Subscriber sub_cmd_vel_;
   ros::Subscriber sub_joint_angles_;
 
