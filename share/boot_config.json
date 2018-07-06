@@ -6,7 +6,7 @@
     {
       "enabled"       : true,
       "resolution"    : 2,
-      "fps"           : 30,
+      "fps"           : 20,
       "recorder_fps"  : 1
     },
     "bottom_camera":
@@ -20,7 +20,7 @@
     {
       "enabled"       : true,
       "resolution"    : 1,
-      "fps"           : 5,
+      "fps"           : 20,
       "recorder_fps"  : 1
     },
     "ir_camera":
