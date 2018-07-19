@@ -922,6 +922,11 @@ void Driver::registerDefaultConverter()
       event_map_.find("tts_done")->second.isPublishing(true);
     }
   }
+
+  _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::IntStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::IntStamped>, converter::MemoryIntConverter>( "Motion/IsMoving/HeadPitch", 20);
+  _registerMemoryConverter<publisher::BasicPublisher<naoqi_bridge_msgs::IntStamped>, recorder::BasicRecorder<naoqi_bridge_msgs::IntStamped>, converter::MemoryIntConverter>( "Motion/IsMoving/HeadYaw", 20);
+
+
   
   boost::shared_ptr<MemoryStringEventRegister> event_register_naoqi_notification = boost::make_shared<MemoryStringEventRegister>( "naoqi_notification", "Naoqi_Driver/Notification", 0, sessionPtr_);
   insertEventConverter("naoqi_notification", event_register_naoqi_notification);
